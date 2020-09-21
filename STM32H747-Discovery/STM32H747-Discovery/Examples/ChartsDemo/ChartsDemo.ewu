@@ -1,0 +1,1274 @@
+$version 9.30
+
+// Charts Demo
+note group Note7
+{
+  attr Bounds = <10,10,460,120>;
+}
+
+// This is the root component of the entire GUI application.
+$rect <30,60,230,100>
+$output false
+class ChartsDemo : Core::Group
+{
+  $rect <610,540,810,580>
+  inherited property Bounds = <0,0,800,480>;
+
+  $rect <10,500,210,540>
+  inherited method Init()
+  {
+    /* generate first set of data */
+    postsignal CreateRandomRecords;
+
+  }
+
+  // This is an image view.
+  $rect <20,20,160,60>
+  object Views::Image Background
+  {
+    preset Bounds = <0,0,800,480>;
+    preset Bitmap = ChartsDemo::DemoBackground;
+  }
+
+  // This is a filled rectangle view.
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle
+  {
+    preset Bounds = <0,400,800,480>;
+    preset Color = #80808040;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton ActionButton
+  {
+    preset Bounds = <30,420,190,460>;
+    preset Enabled = true;
+    preset OnActivate = CreateRandomRecords;
+    preset Label = "New Values";
+    preset Appearance = ChartsDemo::PushButtonConfig;
+  }
+
+  // Button widget to activate the corresponding screen.
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton LineChartButton
+  {
+    preset Bounds = <250,420,410,460>;
+    preset OnActivate = LineChartSlot;
+    preset IconFrame = 0;
+    preset Icon = Charts::ChartsIcons;
+    preset Label = "Line Chart";
+    preset Appearance = ChartsDemo::IconButtonConfig;
+  }
+
+  // Button widget to activate the corresponding screen.
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton BarChartButton
+  {
+    preset Bounds = <430,420,590,460>;
+    preset OnActivate = BarChartSlot;
+    preset IconFrame = 1;
+    preset Icon = Charts::ChartsIcons;
+    preset Label = "Bar Chart";
+    preset Appearance = ChartsDemo::IconButtonConfig;
+  }
+
+  // Button widget to activate the corresponding screen.
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton PieChartButton
+  {
+    preset Bounds = <610,420,770,460>;
+    preset OnActivate = PieChartSlot;
+    preset IconFrame = 2;
+    preset Icon = Charts::ChartsIcons;
+    preset Label = "Pie Chart";
+    preset Appearance = ChartsDemo::IconButtonConfig;
+  }
+
+  // Slot method to trigger the rebuilding of the recordlists within all chart diagrams.
+  $rect <10,540,210,580>
+  slot CreateRandomRecords
+  {
+    postsignal LineScreen.RandomRecords;
+    postsignal BarScreen.RandomRecords;
+    postsignal PieScreen.RandomRecords;
+  }
+
+  // This is a slide gesture handler.
+  $rect <20,20,160,60>
+  object Core::SlideTouchHandler SlideTouchHandler
+  {
+    preset Bounds = <0,0,800,400>;
+    preset SnapNext = <800,0>;
+    preset SlideVert = false;
+    preset ResetSpace = 150;
+  }
+
+  // This is an outline view to group other views together.
+  $rect <20,20,160,60>
+  object Core::Outline Outline
+  {
+    preset Bounds = <0,0,800,400>;
+    preset SlideHandler = SlideTouchHandler;
+    preset Formation = Core::Formation.LeftToRight;
+  }
+
+  // The 'LineScreen' class implements a complete GUI component containing a line \
+  // chart diagram and a couple of control items to configure the chart. The GUI \
+  // component is used within the @ChartsDemo class and embedded within an outline \
+  // box in order to support smooth scrolling between the screens.
+  $rect <20,20,160,60>
+  object ChartsDemo::LineScreen LineScreen
+  {
+    preset Bounds = <0,0,800,400>;
+    preset Embedded = true;
+  }
+
+  // The 'BarScreen' class implements a complete GUI component containing a bar chart \
+  // diagram and a couple of control items to configure the chart. The GUI component \
+  // is used within the @ChartsDemo class and embedded within an outline box in order \
+  // to support smooth scrolling between the screens.
+  $rect <20,20,160,60>
+  object ChartsDemo::BarScreen BarScreen
+  {
+    preset Bounds = <800,0,1600,400>;
+    preset Embedded = true;
+  }
+
+  // The 'PieScreen' class implements a complete GUI component containing a pie chart \
+  // diagram and a couple of control items to configure the chart. The GUI component \
+  // is used within the @ChartsDemo class and embedded within an outline box in order \
+  // to support smooth scrolling between the screens.
+  $rect <20,20,160,60>
+  object ChartsDemo::PieScreen PieScreen
+  {
+    preset Bounds = <800,0,1600,400>;
+    preset Embedded = true;
+  }
+
+  // Slot method to display the corresponding screen.
+  $rect <210,500,410,540>
+  slot LineChartSlot
+  {
+    Outline.EnsureVisible( LineScreen, true, PointEffect, null );
+  }
+
+  // Slot method to display the corresponding screen.
+  $rect <210,540,410,580>
+  slot BarChartSlot
+  {
+    Outline.EnsureVisible( BarScreen, true, PointEffect, null );
+  }
+
+  // Slot method to display the corresponding screen.
+  $rect <410,500,610,540>
+  slot PieChartSlot
+  {
+    Outline.EnsureVisible( PieScreen, true, PointEffect, null );
+  }
+
+  // This is a move point effect used by the outline box to get a smooth scrolling \
+  // between the screens.
+  $rect <610,500,810,540>
+  object Effects::PointEffect PointEffect
+  {
+    preset Timing = Effects::Timing.FastIn_EaseOut;
+    preset CycleDuration = 200;
+  }
+
+  // The application is responsible to present the different chart diagram screens. \
+  // For this purpose, the objects LineScreen, BarScreen, PieScreen and InfoScreen \
+  // are embedded into a Core::Outline object.
+  // To change between the different screens, two different possibilities are implemented:
+  //
+  // 1.) The user can press one of the selection buttons (bottom row) - in this case, \
+  // the method EnsureVisible() of the outline box is called and the outline box \
+  // will scroll to the requested page.
+  //
+  // 2.) The user can make a left/right wipe gesture - in this case, the slide touch \
+  // handler (that is connected with the outline box) will handle the scrolling to \
+  // the next page.
+  note legend Note
+  {
+    attr Bounds = <10,590,810,780>;
+  }
+
+  // This is a timer object.
+  $rect <830,410,1030,450>
+  object Core::Timer AutoDemoTimer
+  {
+    preset OnTrigger = AutoDemo;
+    preset Period = 350;
+  }
+
+  // This is a slot method to trigger the next phase of the auto demo.
+  $rect <830,450,1030,490>
+  slot AutoDemo
+  {
+    sender; /* the method is called from the sender object */
+
+    if ( AutoState == 0 ) postsignal LineChartSlot;
+    else if ( AutoState == 1 ) ;
+    else if ( AutoState == 19 ) ;
+    else if ( AutoState == 20 ) postsignal BarChartSlot;
+    else if ( AutoState == 21 ) ;
+    else if ( AutoState == 39 ) ;
+    else if ( AutoState == 40 ) postsignal PieChartSlot;
+    else if ( AutoState == 41 ) ;
+    else if ( AutoState == 59 ) ;
+    else postsignal CreateRandomRecords;
+
+    AutoState = AutoState + 1;
+    if ( AutoState > 59 )
+      AutoState = 0;
+
+
+  }
+
+  // This is a variable.
+  $rect <830,490,1030,530>
+  var int32 AutoState = 0;
+}
+
+// The 'BarScreen' class implements a complete GUI component containing a bar chart \
+// diagram and a couple of control items to configure the chart. The GUI component \
+// is used within the @ChartsDemo class and embedded within an outline box in order \
+// to support smooth scrolling between the screens.
+$rect <240,180,440,220>
+$output false
+class BarScreen : Core::Group
+{
+  $rect <0,420,200,460>
+  inherited property Bounds = <0,0,800,400>;
+
+  // The class 'BarChart' implements a GUI component for displaying a complete bar \
+  // chart diagram. The data for the single bar segments are taken from @Records.
+  $rect <20,20,160,60>
+  object Charts::BarChart BarChart
+  {
+    preset Bounds = <30,50,510,330>;
+    preset BarFrame = Charts::BarFrame12x12;
+    preset BarSize = 12;
+    preset BarFrameIndex = -1;
+  }
+
+  // Slider widget to control the display range of the bar chart.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderMaxValue
+  {
+    preset Bounds = <600,40,760,100>;
+    preset Outlet = ^BarChart.MaxValue;
+    preset MaxValue = 500;
+    preset MinValue = 50;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Slider widget to control the number of grid lines displayed within the bar chart \
+  // diagram.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderNoOfGridLines
+  {
+    preset Bounds = <600,130,760,190>;
+    preset Outlet = ^BarChart.NoOfGridLines;
+    preset MaxValue = 10;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Radio button to select the current shape of the bars.
+  $rect <20,20,160,60>
+  object WidgetSet::RadioButton RadioRect
+  {
+    preset Bounds = <30,340,150,390>;
+    preset OutletSelector = -1;
+    preset Outlet = ^BarChart.BarFrameIndex;
+    preset Label = "Rect";
+    preset Appearance = ChartsDemo::RadioButtonConfig;
+  }
+
+  // Radio button to select the current shape of the bars.
+  $rect <20,20,160,60>
+  object WidgetSet::RadioButton RadioFlat
+  {
+    preset Bounds = <150,340,270,390>;
+    preset OutletSelector = 1;
+    preset Outlet = ^BarChart.BarFrameIndex;
+    preset Label = "Flat";
+    preset Appearance = ChartsDemo::RadioButtonConfig;
+  }
+
+  // Radio button to select the current shape of the bars.
+  $rect <20,20,160,60>
+  object WidgetSet::RadioButton RadioRound
+  {
+    preset Bounds = <270,340,390,390>;
+    preset OutletSelector = 2;
+    preset Outlet = ^BarChart.BarFrameIndex;
+    preset Label = "Round";
+    preset Appearance = ChartsDemo::RadioButtonConfig;
+  }
+
+  // Radio button to select the current shape of the bars.
+  $rect <20,20,160,60>
+  object WidgetSet::RadioButton RadioRange
+  {
+    preset Bounds = <390,340,510,390>;
+    preset OutletSelector = 3;
+    preset Outlet = ^BarChart.BarFrameIndex;
+    preset Label = "Range";
+    preset Appearance = ChartsDemo::RadioButtonConfig;
+  }
+
+  // Slider widget to control the distance between the single bars.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderSpacing
+  {
+    preset Bounds = <600,220,760,280>;
+    preset Outlet = ^BarChart.SpaceSize;
+    preset MaxValue = 24;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Checkbox widget to switch on/off the charts backgroud.
+  $rect <20,20,160,60>
+  object WidgetSet::ToggleButton CheckBoxBackground
+  {
+    preset Bounds = <600,340,790,390>;
+    preset Checked = true;
+    preset OnSwitchOn = BackgroundSlot;
+    preset OnSwitchOff = BackgroundSlot;
+    preset Label = "Background";
+    preset Appearance = ChartsDemo::CheckBoxConfig;
+  }
+
+  // Slot method to switch on/off the charts background.
+  $rect <820,350,1020,390>
+  slot BackgroundSlot
+  {
+    sender; /* the method is called from the sender object */
+
+    /* change the alpha value of the background */
+    if ( CheckBoxBackground.Checked )
+      BarChart.BackColor.alpha = 0xFF;
+    else
+      BarChart.BackColor.alpha = 0x00;
+
+  }
+
+  // Checkbox to switch on/off the auto-width feature of the bar chart diagram.
+  $rect <20,20,160,60>
+  object WidgetSet::ToggleButton CheckBoxAutoWidth
+  {
+    preset Bounds = <600,290,790,340>;
+    preset OnSwitchOn = AutoWidthSlot;
+    preset OnSwitchOff = AutoWidthSlot;
+    preset Label = "Auto Width";
+    preset Appearance = ChartsDemo::CheckBoxConfig;
+  }
+
+  // Slot method to switch on/off the auto-width feature of the bar chart diagram.
+  $rect <820,300,1020,340>
+  slot AutoWidthSlot
+  {
+    sender; /* the method is called from the sender object */
+
+    /* change width of bar */
+    if ( CheckBoxAutoWidth.Checked )
+      BarChart.BarSize = 0;
+    else
+      BarChart.BarSize = 12;
+
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Caption
+  {
+    preset Bounds = <50,10,510,40>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "Bar Chart Demo";
+    preset Font = Resources::FontLarge;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text1
+  {
+    preset Bounds = <600,30,740,50>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "MaxValue (Range)";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text2
+  {
+    preset Bounds = <600,120,740,140>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "NoOfGridLines";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text3
+  {
+    preset Bounds = <600,210,740,230>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "Spacing";
+    preset Font = Resources::FontSmall;
+  }
+
+  // Slot method to create a set of random records - used as data source for the \
+  // chart diagram.
+  $rect <0,460,200,500>
+  slot RandomRecords
+  {
+    /* clear the current record list */
+    Records.ClearList();
+
+    /* create a random number of random values... */
+    var int32 i = math_rand( 5, 15 );
+    var int32 val;
+    var int32 r;
+    var int32 g;
+    var int32 b;
+
+    while ( i > 0 )
+    {
+      val = math_rand( 10, 100 );
+      r = math_rand( 0x40, 0xC0 );
+      g = math_rand( 0x40, 0xC0 );
+      b = math_rand( 0x40, 0xC0 );
+      Records.AddRecord( val, color( (uint8)r, (uint8)g, (uint8)b, 0xFF ));
+
+      i = i - 1;
+    }
+
+    /* assign the new records list to the chart diagram in order to force an update */
+    BarChart.Records = Records;
+
+  }
+
+  // The object 'Records' contains the data values and colors used to build up the \
+  // chart diagram.
+  $rect <0,500,200,540>
+  object Charts::RecordList Records;
+
+  // The bar chart demo page contains a Charts::BarChart object to draw a bar chart \
+  // diagram.
+  //
+  // The data values for the chart diagram are calculated within the slot method \
+  // RandomRecords() and stored within a Charts::RecordList object.
+  //
+  // The different control widgets are used to configure the bar chart diagram. In \
+  // many cases these widgets change a certain chart parameter directly via their \
+  // Outlet property - in other cases, a separate slot method is used.
+  note legend Note
+  {
+    attr Bounds = <210,420,810,580>;
+  }
+}
+
+// The 'LineScreen' class implements a complete GUI component containing a line chart \
+// diagram and a couple of control items to configure the chart. The GUI component \
+// is used within the @ChartsDemo class and embedded within an outline box in order \
+// to support smooth scrolling between the screens.
+$rect <30,180,230,220>
+$output false
+class LineScreen : Core::Group
+{
+  $rect <0,420,200,460>
+  inherited property Bounds = <0,0,800,400>;
+
+  // The class 'LineChart' implements a GUI component for displaying a complete line \
+  // chart diagram. The data for the single dots and lines are taken from @Records.
+  $rect <20,20,160,60>
+  object Charts::LineChart LineChart
+  {
+    preset Bounds = <30,50,550,300>;
+    preset LineColor = #7D0AFFFF;
+    preset LineWidth = 2;
+    preset GridLineColor = #728210FF;
+    preset DotBitmap = Charts::Dots12x12;
+    preset LineCropping = 5;
+    preset DotBitmapIndex = 3;
+  }
+
+  // Slider widget to control the display range of the line chart.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderMaxValue
+  {
+    preset Bounds = <600,40,760,100>;
+    preset Outlet = ^LineChart.MaxValue;
+    preset MaxValue = 500;
+    preset MinValue = 50;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Slider widget to control the number of grid lines displayed within the line \
+  // chart diagram.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderNoOfGridLines
+  {
+    preset Bounds = <600,130,760,190>;
+    preset Outlet = ^LineChart.NoOfGridLines;
+    preset MaxValue = 10;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Checkbox widget to switch on/off the charts background.
+  $rect <20,20,160,60>
+  object WidgetSet::ToggleButton CheckBoxBackground
+  {
+    preset Bounds = <600,340,790,390>;
+    preset Checked = true;
+    preset OnSwitchOn = BackgroundSlot;
+    preset OnSwitchOff = BackgroundSlot;
+    preset Label = "Background";
+    preset Appearance = ChartsDemo::CheckBoxConfig;
+  }
+
+  // Slot method to switch on/off the charts background.
+  $rect <820,350,1020,390>
+  slot BackgroundSlot
+  {
+    /* change the alpha value of the background */
+    if ( CheckBoxBackground.Checked )
+      LineChart.BackColor.alpha = 0xFF;
+    else
+      LineChart.BackColor.alpha = 0x00;
+
+  }
+
+  // Checkbox widget to switch on/off the area filling below the charts line.
+  $rect <20,20,160,60>
+  object WidgetSet::ToggleButton CheckBoxFilling
+  {
+    preset Bounds = <600,290,790,340>;
+    preset OnSwitchOn = FillingSlot;
+    preset OnSwitchOff = FillingSlot;
+    preset Label = "Filling";
+    preset Appearance = ChartsDemo::CheckBoxConfig;
+  }
+
+  // Slot method to switch on/off the area filling below the charts line.
+  $rect <820,300,1020,340>
+  slot FillingSlot
+  {
+    /* set a non-transparent color if checkbox is checked */
+    if ( CheckBoxFilling.Checked )
+      LineChart.FillColor = #80808040;
+    else
+      LineChart.FillColor = #00000000;
+
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Caption
+  {
+    preset Bounds = <50,10,510,40>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "Line Chart Demo";
+    preset Font = Resources::FontLarge;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text1
+  {
+    preset Bounds = <600,30,740,50>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "MaxValue (Range)";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text2
+  {
+    preset Bounds = <600,120,740,140>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "NoOfGridLines";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text3
+  {
+    preset Bounds = <600,200,740,220>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "LineColor";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text4
+  {
+    preset Bounds = <30,320,170,340>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "DotIndex";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text5
+  {
+    preset Bounds = <210,320,350,340>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "LineWidth";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text6
+  {
+    preset Bounds = <390,320,530,340>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "LineCropping";
+    preset Font = Resources::FontSmall;
+  }
+
+  // Slider widget to control the line cropping of the line chart diagram.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderLineCropping
+  {
+    preset Bounds = <390,330,550,390>;
+    preset Outlet = ^LineChart.LineCropping;
+    preset MaxValue = 20;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Slider widget to select the currently used dot image.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderDotIndex
+  {
+    preset Bounds = <30,330,190,390>;
+    preset Outlet = ^LineChart.DotBitmapIndex;
+    preset MaxValue = 9;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Slider widget to control the line width of the line chart diagram.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderMaxWidth
+  {
+    preset Bounds = <210,330,370,390>;
+    preset Outlet = ^LineChart.LineWidth;
+    preset MaxValue = 9;
+    preset MinValue = 1;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Slot method to create a random line color.
+  $rect <820,230,1020,270>
+  slot ColorSlot
+  {
+    var int32 r;
+    var int32 g;
+    var int32 b;
+
+    /* create a random red, green and blue value */
+    r = math_rand( 0x40, 0xFF );
+    g = math_rand( 0x40, 0xFF );
+    b = math_rand( 0x40, 0xFF );
+
+    /* build a color and assign it to the chart */
+    LineChart.LineColor = color( (uint8)r, (uint8)g, (uint8)b, 0xFF );
+
+  }
+
+  // Button widget to change the currently used line color.
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton ActionButton
+  {
+    preset Bounds = <600,230,760,260>;
+    preset OnActivate = ColorSlot;
+    preset Label = "Change";
+    preset Appearance = ChartsDemo::PushButtonConfig;
+  }
+
+  // Slot method to create a set of random records - used as data source for the \
+  // chart diagram.
+  $rect <0,460,200,500>
+  slot RandomRecords
+  {
+    /* clear the current record list */
+    Records.ClearList();
+
+    /* create a random number of random values... */
+    var int32 i = math_rand( 6, 16 );
+    var int32 val;
+    var int32 r;
+    var int32 g;
+    var int32 b;
+
+    while ( i > 0 )
+    {
+      val = math_rand( 10, 100 );
+      r = math_rand( 0x40, 0xC0 );
+      g = math_rand( 0x40, 0xC0 );
+      b = math_rand( 0x40, 0xC0 );
+      Records.AddRecord( val, color( (uint8)r, (uint8)g, (uint8)b, 0xFF ));
+
+      i = i - 1;
+    }
+
+    /* assign the new records list to the chart diagram in order to force an update */
+    LineChart.Records = Records;
+
+  }
+
+  // The object 'Records' contains the data values and colors used to build up the \
+  // chart diagram.
+  $rect <0,500,200,540>
+  object Charts::RecordList Records;
+
+  // The line chart demo page contains a Charts::LineChart object to draw a line \
+  // chart diagram.
+  //
+  // The data values for the chart diagram are calculated within the slot method \
+  // RandomRecords() and stored within a Charts::RecordList object.
+  //
+  // The different control widgets are used to configure the line chart diagram. \
+  // In many cases these widgets change a certain chart parameter directly via their \
+  // Outlet property - in other cases, a separate slot method is used.
+  note legend Note
+  {
+    attr Bounds = <210,420,810,580>;
+  }
+}
+
+// The 'PieScreen' class implements a complete GUI component containing a pie chart \
+// diagram and a couple of control items to configure the chart. The GUI component \
+// is used within the @ChartsDemo class and embedded within an outline box in order \
+// to support smooth scrolling between the screens.
+$rect <31,230,231,270>
+$output false
+class PieScreen : Core::Group
+{
+  $rect <0,420,200,460>
+  inherited property Bounds = <0,0,800,400>;
+
+  // The class 'PieChart' implements a GUI component for displaying a complete pie \
+  // chart diagram. The data for the single pie segments are taken from @Records.
+  $rect <20,20,160,60>
+  object Charts::PieChart PieChart
+  {
+    preset Bounds = <30,50,400,390>;
+    preset StartAngle = 270.0;
+    preset PieAngle = 360.0;
+    preset SegmentImage = Charts::Pie150_1;
+  }
+
+  // Slider widget to control the start angle of the pie chart.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderStartAngle
+  {
+    preset Bounds = <410,40,570,100>;
+    preset OnChange = UpdatePieSlot;
+    preset MaxValue = 360;
+    preset MinValue = 0;
+    preset CurrentValue = 270;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Slider widget to control the total angle of the pie chart.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderPieAngle
+  {
+    preset Bounds = <600,40,760,100>;
+    preset OnChange = UpdatePieSlot;
+    preset MaxValue = 360;
+    preset MinValue = 0;
+    preset CurrentValue = 360;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Slider widget to control the scaling factor of the pie chart.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderScaling
+  {
+    preset Bounds = <410,130,570,190>;
+    preset OnChange = UpdatePieSlot;
+    preset MaxValue = 100;
+    preset CurrentValue = 100;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // Slider widget to control the displacment of the single pie segments.
+  $rect <20,20,160,60>
+  object WidgetSet::HorizontalSlider SliderDisplacement
+  {
+    preset Bounds = <600,130,760,190>;
+    preset OnChange = UpdatePieSlot;
+    preset MaxValue = 20;
+    preset CurrentValue = 0;
+    preset Appearance = ChartsDemo::HorizontalSliderConfig;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Caption
+  {
+    preset Bounds = <50,10,510,40>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "Pie Chart Demo";
+    preset Font = Resources::FontLarge;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text1
+  {
+    preset Bounds = <410,30,550,50>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "StartAngle";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text2
+  {
+    preset Bounds = <600,30,740,50>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "PieAngle";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text3
+  {
+    preset Bounds = <410,120,550,140>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "Scaling";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text4
+  {
+    preset Bounds = <600,120,740,140>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "Displacement";
+    preset Font = Resources::FontSmall;
+  }
+
+  // This is an ordinary text view.
+  $rect <20,20,160,60>
+  object Views::Text Text5
+  {
+    preset Bounds = <600,200,750,220>;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "SegmentImage";
+    preset Font = Resources::FontSmall;
+  }
+
+  // Slot method to exchange the currently used pie segment image.
+  $rect <820,230,1020,270>
+  slot PieImageSlot
+  {
+    /* take the next index */
+    segmentIndex = segmentIndex + 1;
+    if ( segmentIndex > 4 )
+      segmentIndex = 0;
+
+    /* change the image of the pie segment according current index */
+    switch( segmentIndex )
+    {
+      case 1: PieChart.SegmentImage = pieSegment1;
+      case 2: PieChart.SegmentImage = pieSegment2;
+      case 3: PieChart.SegmentImage = pieSegment3;
+      case 4: PieChart.SegmentImage = pieSegment4;
+      default: PieChart.SegmentImage = pieSegment5;
+    }
+  }
+
+  // Slot method to provide the current user settings to the pie chart diagram.
+  $rect <820,140,1020,180>
+  slot UpdatePieSlot
+  {
+    /* since the slider provides int32 values and the pie chart is controlled via float values,
+       this slot method is called each time the user has changed a slider position,
+       in order to set the corresponding pie chart properties */
+
+    PieChart.StartAngle   = (float)SliderStartAngle.CurrentValue;
+    PieChart.PieAngle     = (float)SliderPieAngle.CurrentValue;
+    PieChart.Scaling      = (float)SliderScaling.CurrentValue / 100.0;
+    PieChart.Displacement = (float)SliderDisplacement.CurrentValue;
+  }
+
+  // Slot method to create a set of random records - used as data source for the \
+  // chart diagram.
+  $rect <0,460,200,500>
+  slot RandomRecords
+  {
+    /* clear the current record list */
+    Records.ClearList();
+
+    /* create a random number of random values... */
+    var int32 i = math_rand( 3, 7 );
+    var int32 val;
+    var int32 r;
+    var int32 g;
+    var int32 b;
+
+    while ( i > 0 )
+    {
+      val = math_rand( 50, 100 );
+      r = math_rand( 0x40, 0xC0 );
+      g = math_rand( 0x40, 0xC0 );
+      b = math_rand( 0x40, 0xC0 );
+      Records.AddRecord( val, color( (uint8)r, (uint8)g, (uint8)b, 0xFF ));
+
+      i = i - 1;
+    }
+
+    /* assign the new records list to the chart diagram in order to force an update */
+    PieChart.Records = Records;
+
+  }
+
+  // The object 'Records' contains the data values and colors used to build up the \
+  // chart diagram.
+  $rect <0,500,200,540>
+  object Charts::RecordList Records;
+
+  // Button widget to exchange the currently used pie segment image.
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton ActionButton
+  {
+    preset Bounds = <600,230,760,260>;
+    preset OnActivate = PieImageSlot;
+    preset Label = "Change";
+    preset Appearance = ChartsDemo::PushButtonConfig;
+  }
+
+  // This is a variable.
+  $rect <820,280,1020,320>
+  var int32 segmentIndex = 0;
+
+  // The variable keeps a segment bitmap within the memory in order to avoid reloading \
+  // the bitmap.
+  $rect <840,370,1040,410>
+  $output true
+  var Resources::Bitmap pieSegment1 = Charts::Pie150_1;
+
+  // The variable keeps a segment bitmap within the memory in order to avoid reloading \
+  // the bitmap.
+  $rect <840,410,1040,450>
+  $output true
+  var Resources::Bitmap pieSegment2 = Charts::Pie150_2;
+
+  // The variable keeps a segment bitmap within the memory in order to avoid reloading \
+  // the bitmap.
+  $rect <840,450,1040,490>
+  $output true
+  var Resources::Bitmap pieSegment3 = Charts::Pie150_3;
+
+  // The variable keeps a segment bitmap within the memory in order to avoid reloading \
+  // the bitmap.
+  $rect <840,490,1040,530>
+  $output true
+  var Resources::Bitmap pieSegment4 = Charts::Pie150_4;
+
+  // The variable keeps a segment bitmap within the memory in order to avoid reloading \
+  // the bitmap.
+  $rect <840,530,1040,570>
+  $output true
+  var Resources::Bitmap pieSegment5 = Charts::Pie150_5;
+
+  // The pie chart demo page contains a Charts::PieChart object to draw a pie chart \
+  // diagram.
+  //
+  // The data values for the pie diagram are calculated within the slot method RandomRecord() \
+  // and stored within a Charts::RecordList object.
+  //
+  // The different control widgets are used to configure the pie chart diagram. In \
+  // many cases these widgets change a certain chart parameter directly via their \
+  // Outlet property - in other cases, a separate slot method is used.
+  note legend Note
+  {
+    attr Bounds = <210,420,810,580>;
+  }
+
+  // Pie segment images
+  note group Note1
+  {
+    attr Bounds = <820,330,1060,580>;
+  }
+}
+
+// Chart pages
+note group Note8
+{
+  attr Bounds = <10,130,460,290>;
+}
+
+// Flat Widgets as customized default widgets
+note group NoteGroup
+{
+  attr Bounds = <10,300,860,570>;
+}
+
+$rect <30,350,440,390>
+$output false
+autoobject WidgetSet::PushButtonConfig PushButtonConfig
+{
+  preset LabelColorActive = ChartsDemo::ColorOfBackground;
+  preset LabelColorFocused = ChartsDemo::ColorOfBackground;
+  preset LabelColorDisabled = ChartsDemo::ColorOfBackground;
+  preset LabelColorDefault = ChartsDemo::ColorOfBackground;
+  preset LabelFont = Resources::FontMedium;
+  preset FaceTintActive = ChartsDemo::ColorOfTheme;
+  preset FaceTintFocused = ChartsDemo::ColorOfTouch;
+  preset FaceTintDisabled = ChartsDemo::ColorOfDisabled;
+  preset FaceTintDefault = ChartsDemo::ColorOfTouch;
+  preset FaceActive = ChartsDemo::Frame;
+  preset FaceFocused = ChartsDemo::Frame;
+  preset FaceDisabled = ChartsDemo::Frame;
+  preset FaceDefault = ChartsDemo::Frame;
+}
+
+$rect <440,350,640,390>
+$output false
+resource Resources::Bitmap Frame
+{
+  attr bitmapfile FileName;
+  attr alphafile AlphaName = .\Res\FlatFrame.png;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+}
+
+// Bitmap resource - used in demo applications as background.
+$rect <230,710,430,750>
+$output false
+resource Resources::Bitmap DemoBackground
+{
+  attr bitmapfile FileName = .\Res\FlatDemoBackground.png;
+  attr alphafile AlphaName;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+}
+
+// Color constant representing the main theme color of the widget kit.
+$rect <30,630,230,670>
+$output false
+const color ColorOfTheme = #7FBF00FF;
+
+// Color constant for all touchable items.
+$rect <30,670,230,710>
+$output false
+const color ColorOfTouch = #FFFFFFFF;
+
+// Color constant for all widget bodies.
+$rect <30,710,230,750>
+$output false
+const color ColorOfBody = #50535FFF;
+
+// Color constant for all disabled items.
+$rect <230,630,430,670>
+$output false
+const color ColorOfDisabled = #6B6F80FF;
+
+// Color constant for all items that should appear like the background.
+$rect <230,670,430,710>
+$output false
+const color ColorOfBackground = #000000FF;
+
+// Color Constants for Flat Widgets
+note group NoteGroup1
+{
+  attr Bounds = <10,580,450,780>;
+}
+
+$rect <30,430,440,470>
+$output false
+autoobject WidgetSet::ToggleButtonConfig CheckBoxConfig
+{
+  preset LabelOnColorActive = ChartsDemo::ColorOfTouch;
+  preset LabelOnColorFocused = ChartsDemo::ColorOfTouch;
+  preset LabelOnColorDisabled = ChartsDemo::ColorOfDisabled;
+  preset LabelOnColorDefault = ChartsDemo::ColorOfTouch;
+  preset LabelOffColorActive = ChartsDemo::ColorOfTouch;
+  preset LabelOffColorFocused = ChartsDemo::ColorOfTouch;
+  preset LabelOffColorDisabled = ChartsDemo::ColorOfDisabled;
+  preset LabelOffColorDefault = ChartsDemo::ColorOfTouch;
+  preset LabelMarginLeft = 30;
+  preset IconMarginLeft = 40;
+  preset LabelAlignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+  preset LabelOnFont = Resources::FontMedium;
+  preset LabelOffFont = Resources::FontMedium;
+  preset IconAlignment = Views::ImageAlignment[AlignHorzLeft, AlignVertCenter];
+  preset FaceLayout = Core::Layout[AlignToBottom, AlignToLeft, AlignToTop];
+  preset FaceOnFrameActive = 5;
+  preset FaceOnFrameFocused = 1;
+  preset FaceOnFrameDisabled = 3;
+  preset FaceOnFrameDefault = 1;
+  preset FaceOnActive = ChartsDemo::CheckBox;
+  preset FaceOnFocused = ChartsDemo::CheckBox;
+  preset FaceOnDisabled = ChartsDemo::CheckBox;
+  preset FaceOnDefault = ChartsDemo::CheckBox;
+  preset FaceOffFrameActive = 4;
+  preset FaceOffFrameFocused = 0;
+  preset FaceOffFrameDisabled = 2;
+  preset FaceOffFrameDefault = 0;
+  preset FaceOffActive = ChartsDemo::CheckBox;
+  preset FaceOffFocused = ChartsDemo::CheckBox;
+  preset FaceOffDisabled = ChartsDemo::CheckBox;
+  preset FaceOffDefault = ChartsDemo::CheckBox;
+  preset WidgetMinSize = <20,20>;
+}
+
+$rect <440,430,640,470>
+$output false
+resource Resources::Bitmap CheckBox
+{
+  attr bitmapfile FileName = .\Res\FlatCheckBox.png;
+  attr alphafile AlphaName;
+  attr framesize FrameSize = <20,20>;
+  attr framedelay FrameDelay;
+}
+
+$rect <440,470,640,510>
+$output false
+resource Resources::Bitmap RadioButton
+{
+  attr bitmapfile FileName = .\Res\FlatRadioButton.png;
+  attr alphafile AlphaName;
+  attr framesize FrameSize = <20,20>;
+  attr framedelay FrameDelay;
+}
+
+$rect <30,470,440,510>
+$output false
+autoobject WidgetSet::RadioButtonConfig RadioButtonConfig
+{
+  preset LabelOnColorActive = ChartsDemo::ColorOfTouch;
+  preset LabelOnColorFocused = ChartsDemo::ColorOfTouch;
+  preset LabelOnColorDisabled = ChartsDemo::ColorOfDisabled;
+  preset LabelOnColorDefault = ChartsDemo::ColorOfTouch;
+  preset LabelOffColorActive = ChartsDemo::ColorOfTouch;
+  preset LabelOffColorFocused = ChartsDemo::ColorOfTouch;
+  preset LabelOffColorDisabled = ChartsDemo::ColorOfDisabled;
+  preset LabelOffColorDefault = ChartsDemo::ColorOfTouch;
+  preset LabelMarginLeft = 30;
+  preset IconMarginLeft = 40;
+  preset LabelAlignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+  preset LabelOnFont = Resources::FontMedium;
+  preset LabelOffFont = Resources::FontMedium;
+  preset IconAlignment = Views::ImageAlignment[AlignHorzLeft, AlignVertCenter];
+  preset FaceLayout = Core::Layout[AlignToBottom, AlignToLeft, AlignToTop];
+  preset FaceOnFrameActive = 5;
+  preset FaceOnFrameFocused = 1;
+  preset FaceOnFrameDisabled = 3;
+  preset FaceOnFrameDefault = 1;
+  preset FaceOnActive = ChartsDemo::RadioButton;
+  preset FaceOnFocused = ChartsDemo::RadioButton;
+  preset FaceOnDisabled = ChartsDemo::RadioButton;
+  preset FaceOnDefault = ChartsDemo::RadioButton;
+  preset FaceOffFrameActive = 4;
+  preset FaceOffFrameFocused = 0;
+  preset FaceOffFrameDisabled = 2;
+  preset FaceOffFrameDefault = 0;
+  preset FaceOffActive = ChartsDemo::RadioButton;
+  preset FaceOffFocused = ChartsDemo::RadioButton;
+  preset FaceOffDisabled = ChartsDemo::RadioButton;
+  preset FaceOffDefault = ChartsDemo::RadioButton;
+  preset WidgetMinSize = <20,20>;
+}
+
+$rect <30,510,440,550>
+$output false
+autoobject WidgetSet::HorizontalSliderConfig HorizontalSliderConfig
+{
+  preset ThumbFrameActive = 2;
+  preset ThumbFrameFocused = 0;
+  preset ThumbFrameDisabled = 1;
+  preset ThumbFrameDefault = 0;
+  preset ThumbActive = ChartsDemo::SliderThumb;
+  preset ThumbFocused = ChartsDemo::SliderThumb;
+  preset ThumbDisabled = ChartsDemo::SliderThumb;
+  preset ThumbDefault = ChartsDemo::SliderThumb;
+  preset FaceActive = ChartsDemo::HorzSliderFace;
+  preset FaceFocused = ChartsDemo::HorzSliderFace;
+  preset FaceDisabled = ChartsDemo::HorzSliderFace;
+  preset FaceDefault = ChartsDemo::HorzSliderFace;
+  preset WidgetMinSize = <60,20>;
+}
+
+$rect <440,510,640,550>
+$output false
+resource Resources::Bitmap HorzSliderFace
+{
+  attr bitmapfile FileName = .\Res\FlatHorzSliderFace.png;
+  attr alphafile AlphaName;
+  attr framesize FrameSize;
+  attr framedelay FrameDelay;
+}
+
+$rect <640,510,840,550>
+$output false
+resource Resources::Bitmap SliderThumb
+{
+  attr bitmapfile FileName = .\Res\FlatSliderThumb.png;
+  attr alphafile AlphaName;
+  attr framesize FrameSize = <20,20>;
+  attr framedelay FrameDelay;
+}
+
+$rect <30,390,440,430>
+$output false
+autoobject WidgetSet::PushButtonConfig IconButtonConfig
+{
+  preset LabelColorActive = ChartsDemo::ColorOfTheme;
+  preset LabelColorFocused = ChartsDemo::ColorOfTouch;
+  preset LabelColorDisabled = ChartsDemo::ColorOfDisabled;
+  preset LabelColorDefault = ChartsDemo::ColorOfTouch;
+  preset LabelMarginLeft = 40;
+  preset IconTintActive = ChartsDemo::ColorOfBackground;
+  preset IconTintFocused = ChartsDemo::ColorOfBackground;
+  preset IconTintDisabled = ChartsDemo::ColorOfBackground;
+  preset IconTintDefault = ChartsDemo::ColorOfBackground;
+  preset IconMarginLeft = 3;
+  preset LabelAlignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+  preset LabelFont = Resources::FontMedium;
+  preset IconAlignment = Views::ImageAlignment[AlignHorzLeft, AlignVertCenter];
+  preset FaceLayout = Core::Layout[AlignToBottom, AlignToLeft, AlignToTop];
+  preset FaceTintActive = ChartsDemo::ColorOfTheme;
+  preset FaceTintFocused = ChartsDemo::ColorOfTouch;
+  preset FaceTintDisabled = ChartsDemo::ColorOfDisabled;
+  preset FaceTintDefault = ChartsDemo::ColorOfTouch;
+  preset FaceActive = ChartsDemo::Frame;
+  preset FaceFocused = ChartsDemo::Frame;
+  preset FaceDisabled = ChartsDemo::Frame;
+  preset FaceDefault = ChartsDemo::Frame;
+  preset WidgetMinSize = <30,30>;
+}
+
+// Demo widgets in a flat design.
+//
+// This unit contains the configuration and resources to create a couple of widgets \
+// used to control the demo application.
+//
+// This is not a universal widget set - only the widgets needed within the demo are \
+// defined here.
+note legend Note
+{
+  attr Bounds = <460,580,860,780>;
+}
+
+// How to use and customize widgets?
+//
+// https://doc.embedded-wizard.de/using-widgets
+note legend Note9
+{
+  attr Bounds = <10,790,460,860>;
+}
